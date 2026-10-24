@@ -1,7 +1,7 @@
 import { debug } from "@actions/core";
 import { readFileSync } from "fs";
 import { XMLParser } from "fast-xml-parser";
-import { logProblems } from "./logProblems";
+import { logProblems, Severity } from "./logProblems";
 import { Problem } from "./problem";
 
 export { Problem, logProblems };
@@ -64,8 +64,12 @@ export function parseData(
   return problems;
 }
 
-export function run(sourceDir: string, pmdFile: string) {
+export function run(
+  sourceDir: string,
+  pmdFile: string,
+  severity: Severity = "error",
+) {
   const data = readFileSync(pmdFile);
   debug(data.toString());
-  logProblems(parseData(sourceDir, data));
+  logProblems(parseData(sourceDir, data), severity);
 }

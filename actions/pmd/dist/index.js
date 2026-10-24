@@ -31469,7 +31469,7 @@ function error(message, properties = {}) {
  * @param properties optional properties to add to the annotation.
  */
 function warning(message, properties = {}) {
-    issueCommand('warning', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+    command_issueCommand('warning', utils_toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
  * Adds a notice issue
@@ -38738,9 +38738,22 @@ class XMLParser {
 }
 ;// CONCATENATED MODULE: ./src/logProblems.ts
 
-function logProblems(problems) {
+function parseSeverity(value) {
+    if (value === "" || value === "error") {
+        return "error";
+    }
+    if (value === "warning") {
+        return "warning";
+    }
+    throw new Error(`Unknown severity '${value}', expected 'error' or 'warning'.`);
+}
+function logProblems(problems, severity = "error") {
+    const log = severity === "warning" ? warning : error;
     for (const problem of problems) {
-        error(problem.info !== undefined && problem.info !== null ? problem.info : "", problem);
+        log(problem.info !== undefined && problem.info !== null ? problem.info : "", problem);
+    }
+    if (severity === "warning") {
+        return;
     }
     if (problems.length == 1) {
         setFailed(`There was ${problems.length} problem.`);
@@ -38794,19 +38807,21 @@ function parseData(sourceDirectory, data) {
     }
     return problems;
 }
-function run(sourceDir, pmdFile) {
+function run(sourceDir, pmdFile, severity = "error") {
     const data = (0,external_fs_namespaceObject.readFileSync)(pmdFile);
     core_debug(data.toString());
-    logProblems(parseData(sourceDir, data));
+    logProblems(parseData(sourceDir, data), severity);
 }
 
 ;// CONCATENATED MODULE: ./src/action.ts
 
 
+
 async function action_run() {
     const pmdFile = getInput("file");
     const sourceDir = getInput("src");
-    run(sourceDir, pmdFile);
+    const severity = parseSeverity(getInput("severity"));
+    run(sourceDir, pmdFile, severity);
 }
 action_run().catch((err) => setFailed(err));
 

@@ -8,6 +8,10 @@ inputs:
   file:
     required: true
     description: The PMD file to parse and upload
+  severity:
+    required: false
+    default: "error"
+    description: "`error` fails the step when PMD finds something, `warning` only reports it."
 
 runs:
   using: "node24"
