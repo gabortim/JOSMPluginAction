@@ -3,8 +3,8 @@ description: "Read PMD and add annotations"
 inputs:
   src:
     required: false
-    default: "src"
-    description: "The root source directory for the PMD file. Defaults to `` (example: `src/org/openstreetmap/josm/gui/MainApplication.java`)."
+    default: ""
+    description: "Prefix for the file paths in the PMD report. Leave it empty if the paths start at the repository root (`src/org/...`), set it to `src` if they start inside it (`org/...`)."
   file:
     required: true
     description: The PMD file to parse and upload
