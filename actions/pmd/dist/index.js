@@ -31484,7 +31484,7 @@ function notice(message, properties = {}) {
  * @param message info message
  */
 function info(message) {
-    process.stdout.write(message + os.EOL);
+    process.stdout.write(message + external_os_namespaceObject.EOL);
 }
 /**
  * Begin an output group.
@@ -38756,14 +38756,18 @@ function logProblems(problems, severity = "error") {
             : problem.message || problem.info || "";
         log(`${problem.file}:${problem.startLine}: ${details}`, problem);
     }
-    if (severity === "warning") {
+    if (problems.length == 0) {
+        info("PMD found no problems.");
         return;
     }
-    if (problems.length == 1) {
-        setFailed(`There was ${problems.length} problem.`);
+    const count_report = problems.length == 1
+        ? "There was 1 problem."
+        : `There were ${problems.length} problems.`;
+    if (severity === "warning") {
+        info(count_report);
     }
-    else if (problems.length > 0) {
-        setFailed(`There were ${problems.length} problems.`);
+    else {
+        setFailed(count_report);
     }
 }
 

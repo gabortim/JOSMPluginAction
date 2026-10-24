@@ -27,11 +27,20 @@ describe("Test action/logProblems", function () {
   test("Warning severity does not fail", () => {
     const log = jest.spyOn(core, "warning");
     const errorLog = jest.spyOn(core, "error");
+    const infoLog = jest.spyOn(core, "info").mockImplementation(() => {});
     const failed = jest.spyOn(core, "setFailed").mockImplementation(() => {});
     logProblems([problem, problem], "warning");
     expect(log).toBeCalledTimes(2);
     expect(log).toBeCalledWith(text, problem);
     expect(errorLog).not.toBeCalled();
+    expect(infoLog).toBeCalledWith("There were 2 problems.");
+    expect(failed).not.toBeCalled();
+  });
+  test("No problems", () => {
+    const infoLog = jest.spyOn(core, "info").mockImplementation(() => {});
+    const failed = jest.spyOn(core, "setFailed").mockImplementation(() => {});
+    logProblems([]);
+    expect(infoLog).toBeCalledWith("PMD found no problems.");
     expect(failed).not.toBeCalled();
   });
 });

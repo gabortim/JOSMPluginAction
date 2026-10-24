@@ -1,4 +1,4 @@
-import { error, setFailed, warning } from "@actions/core";
+import { error, info, setFailed, warning } from "@actions/core";
 import { Problem } from "./problem";
 
 /** How problems are reported: `error` fails the step, `warning` does not. */
@@ -29,12 +29,17 @@ export function logProblems(
         : problem.message || problem.info || "";
     log(`${problem.file}:${problem.startLine}: ${details}`, problem);
   }
-  if (severity === "warning") {
+  if (problems.length == 0) {
+    info("PMD found no problems.");
     return;
   }
-  if (problems.length == 1) {
-    setFailed(`There was ${problems.length} problem.`);
-  } else if (problems.length > 0) {
-    setFailed(`There were ${problems.length} problems.`);
+  const count_report =
+    problems.length == 1
+      ? "There was 1 problem."
+      : `There were ${problems.length} problems.`;
+  if (severity === "warning") {
+    info(count_report);
+  } else {
+    setFailed(count_report);
   }
 }
