@@ -42,6 +42,16 @@ const JOSM_EXAMPLE_NO_VIOLATIONS = `<?xml version="1.0" encoding="UTF-8"?>
 </pmd>`;
 
 describe("Test action/parseData", () => {
+  test("Windows path separators", () => {
+    const problems = parseData(
+      "",
+      JOSM_SINGLE_EXAMPLE.replace(
+        "org/openstreetmap/josm/actions/JoinAreasAction.java",
+        "src\\org\\JoinAreasAction.java",
+      ),
+    );
+    expect(problems[0].file).toBe("src/org/JoinAreasAction.java");
+  });
   test("JOSM Sample XML, no issues", () => {
     const problems = parseData("", JOSM_EXAMPLE_NO_VIOLATIONS);
     expect(problems.length).toBe(0);
@@ -58,6 +68,7 @@ describe("Test action/parseData", () => {
         endLine: 1339,
         title: "Best Practices/UnusedLocalVariable",
         info: "https://pmd.github.io/pmd-6.53.0/pmd_rules_java_bestpractices.html#unusedlocalvariable",
+        message: "Avoid unused local variables such as 'spec'.",
       },
       problems[0],
     );
@@ -74,6 +85,7 @@ describe("Test action/parseData", () => {
         endLine: 1339,
         title: "Best Practices/UnusedLocalVariable",
         info: "https://pmd.github.io/pmd-6.53.0/pmd_rules_java_bestpractices.html#unusedlocalvariable",
+        message: "Avoid unused local variables such as 'spec'.",
       },
       problems[0],
     );
@@ -86,6 +98,7 @@ describe("Test action/parseData", () => {
         endLine: 71,
         title: "Best Practices/UnusedLocalVariable",
         info: "https://pmd.github.io/pmd-6.53.0/pmd_rules_java_bestpractices.html#unusedlocalvariable",
+        message: "Avoid unused local variables such as 'spec'.",
       },
       problems[1],
     );
@@ -102,6 +115,7 @@ describe("Test action/parseData", () => {
         endLine: 1339,
         title: "Best Practices/UnusedLocalVariable",
         info: "https://pmd.github.io/pmd-6.53.0/pmd_rules_java_bestpractices.html#unusedlocalvariable",
+        message: "Avoid unused local variables such as 'spec'.",
       },
       problems[0],
     );
@@ -114,6 +128,7 @@ describe("Test action/parseData", () => {
         endLine: 1349,
         title: "Best Practices/UnusedLocalVariable",
         info: "https://pmd.github.io/pmd-6.53.0/pmd_rules_java_bestpractices.html#unusedlocalvariable",
+        message: "Avoid unused local variables such as 'spec'.",
       },
       problems[1],
     );

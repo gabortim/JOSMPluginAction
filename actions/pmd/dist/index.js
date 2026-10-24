@@ -30022,7 +30022,7 @@ const _summary = new Summary();
  * @deprecated use `core.summary`
  */
 const markdownSummary = (/* unused pure expression or super */ null && (_summary));
-const summary = (/* unused pure expression or super */ null && (_summary));
+const summary = _summary;
 //# sourceMappingURL=summary.js.map
 ;// CONCATENATED MODULE: ../../node_modules/@actions/core/lib/path-utils.js
 
@@ -38750,7 +38750,11 @@ function parseSeverity(value) {
 function logProblems(problems, severity = "error") {
     const log = severity === "warning" ? warning : error;
     for (const problem of problems) {
-        log(problem.info !== undefined && problem.info !== null ? problem.info : "", problem);
+        // The log only prints the message, so it names the location itself
+        const details = problem.message && problem.info
+            ? `${problem.message} (${problem.info})`
+            : problem.message || problem.info || "";
+        log(`${problem.file}:${problem.startLine}: ${details}`, problem);
     }
     if (severity === "warning") {
         return;
@@ -38763,7 +38767,46 @@ function logProblems(problems, severity = "error") {
     }
 }
 
+;// CONCATENATED MODULE: ./src/summary.ts
+function escapeCell(text) {
+    return text.replace(/\|/g, "\\|").replace(/\s*\n\s*/g, " ");
+}
+function summary_location(problem, blobUrl) {
+    const text = `${problem.file}:${problem.startLine}`;
+    if (blobUrl === undefined) {
+        return escapeCell(text);
+    }
+    const lines = problem.endLine > problem.startLine
+        ? `L${problem.startLine}-L${problem.endLine}`
+        : `L${problem.startLine}`;
+    return `[${escapeCell(text)}](${blobUrl}/${encodeURI(problem.file)}#${lines})`;
+}
+/**
+ * Format all problems as a Markdown table for the job summary.
+ * Annotations are capped by GitHub, the summary lists every problem.
+ * @param problems The problems to list
+ * @param blobUrl The base URL for file links, e.g. `https://github.com/owner/repo/blob/<sha>`
+ */
+function formatSummary(problems, blobUrl) {
+    const rows = problems.map((problem) => {
+        const rule = problem.info !== undefined && problem.info !== null
+            ? `[${escapeCell(problem.title ?? "")}](${problem.info})`
+            : escapeCell(problem.title ?? "");
+        return `| ${summary_location(problem, blobUrl)} | ${rule} | ${escapeCell(problem.message ?? "")} |`;
+    });
+    const count = `${problems.length} violation${problems.length == 1 ? "" : "s"}`;
+    return [
+        `## PMD: ${count}`,
+        "",
+        "| Location | Rule | Message |",
+        "| --- | --- | --- |",
+        ...rows,
+        "",
+    ].join("\n");
+}
+
 ;// CONCATENATED MODULE: ./src/pmd.ts
+
 
 
 
@@ -38772,7 +38815,7 @@ function logProblems(problems, severity = "error") {
 function parseFile(sourceDirectory, fileData) {
     const file = (sourceDirectory.length > 0 && !sourceDirectory.endsWith("/")
         ? sourceDirectory + "/"
-        : sourceDirectory) + fileData["@_name"];
+        : sourceDirectory) + fileData["@_name"].replace(/\\/g, "/");
     const violations = fileData["violation"];
     const problems = [];
     for (const violation of violations) {
@@ -38785,6 +38828,7 @@ function parseFile(sourceDirectory, fileData) {
             startLine: parseInt(violation["@_beginline"]),
             endLine: parseInt(violation["@_endline"]),
             info: violation["@_externalInfoUrl"],
+            message: violation["#text"],
         });
     }
     return problems;
@@ -38807,10 +38851,21 @@ function parseData(sourceDirectory, data) {
     }
     return problems;
 }
-function run(sourceDir, pmdFile, severity = "error") {
+async function run(sourceDir, pmdFile, severity = "error") {
     const data = (0,external_fs_namespaceObject.readFileSync)(pmdFile);
     core_debug(data.toString());
-    logProblems(parseData(sourceDir, data), severity);
+    const problems = parseData(sourceDir, data);
+    logProblems(problems, severity);
+    if (problems.length > 0) {
+        await summary.addRaw(formatSummary(problems, blobUrl())).write();
+    }
+}
+function blobUrl() {
+    const { GITHUB_SERVER_URL, GITHUB_REPOSITORY, GITHUB_SHA } = process.env;
+    if (!GITHUB_SERVER_URL || !GITHUB_REPOSITORY || !GITHUB_SHA) {
+        return undefined;
+    }
+    return `${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}`;
 }
 
 ;// CONCATENATED MODULE: ./src/action.ts
@@ -38821,7 +38876,7 @@ async function action_run() {
     const pmdFile = getInput("file");
     const sourceDir = getInput("src");
     const severity = parseSeverity(getInput("severity"));
-    run(sourceDir, pmdFile, severity);
+    await run(sourceDir, pmdFile, severity);
 }
 action_run().catch((err) => setFailed(err));
 

@@ -6,7 +6,7 @@ async function run(): Promise<void> {
   const pmdFile = getInput("file");
   const sourceDir = getInput("src");
   const severity = parseSeverity(getInput("severity"));
-  realRun(sourceDir, pmdFile, severity);
+  await realRun(sourceDir, pmdFile, severity);
 }
 
 run().catch((err) => setFailed(err));

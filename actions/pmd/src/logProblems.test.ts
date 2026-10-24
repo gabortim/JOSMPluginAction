@@ -10,7 +10,10 @@ const problem = {
   endLine: 1349,
   title: "Best Practices/UnusedLocalVariable",
   info: "https://pmd.github.io/pmd-6.53.0/pmd_rules_java_bestpractices.html#unusedlocalvariable",
+  message: "Avoid unused local variables such as 'spec'.",
 };
+const text =
+  "org/openstreetmap/josm/actions/JoinAreasAction.java:1349: Avoid unused local variables such as 'spec'. (https://pmd.github.io/pmd-6.53.0/pmd_rules_java_bestpractices.html#unusedlocalvariable)";
 
 describe("Test action/logProblems", function () {
   test("Simple logging", () => {
@@ -18,10 +21,7 @@ describe("Test action/logProblems", function () {
     const failed = jest.spyOn(core, "setFailed").mockImplementation(() => {});
     logProblems([problem]);
     expect(log).toBeCalledTimes(1);
-    expect(log).toBeCalledWith(
-      "https://pmd.github.io/pmd-6.53.0/pmd_rules_java_bestpractices.html#unusedlocalvariable",
-      problem,
-    );
+    expect(log).toBeCalledWith(text, problem);
     expect(failed).toBeCalledWith("There was 1 problem.");
   });
   test("Warning severity does not fail", () => {
@@ -30,10 +30,7 @@ describe("Test action/logProblems", function () {
     const failed = jest.spyOn(core, "setFailed").mockImplementation(() => {});
     logProblems([problem, problem], "warning");
     expect(log).toBeCalledTimes(2);
-    expect(log).toBeCalledWith(
-      "https://pmd.github.io/pmd-6.53.0/pmd_rules_java_bestpractices.html#unusedlocalvariable",
-      problem,
-    );
+    expect(log).toBeCalledWith(text, problem);
     expect(errorLog).not.toBeCalled();
     expect(failed).not.toBeCalled();
   });

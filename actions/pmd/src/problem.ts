@@ -16,4 +16,6 @@ export interface Problem {
   endLine: number;
   /** Optional info */
   info?: string;
+  /** The problem description */
+  message?: string;
 }

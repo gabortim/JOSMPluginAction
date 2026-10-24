@@ -22,10 +22,12 @@ export function logProblems(
 ): void {
   const log = severity === "warning" ? warning : error;
   for (const problem of problems) {
-    log(
-      problem.info !== undefined && problem.info !== null ? problem.info : "",
-      problem,
-    );
+    // The log only prints the message, so it names the location itself
+    const details =
+      problem.message && problem.info
+        ? `${problem.message} (${problem.info})`
+        : problem.message || problem.info || "";
+    log(`${problem.file}:${problem.startLine}: ${details}`, problem);
   }
   if (severity === "warning") {
     return;

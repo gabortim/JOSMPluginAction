@@ -9,6 +9,7 @@ export function expectProblem(expected: Problem, actual: Problem) {
   expect(actual.endLine).toBe(expected.endLine);
   expect(actual.file).toBe(expected.file);
   expect(actual.info).toBe(expected.info);
+  expect(actual.message).toBe(expected.message);
 }
 
 describe("Test problem", function () {
